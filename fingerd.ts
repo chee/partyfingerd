@@ -28,15 +28,14 @@ for await (const conn of listener) {
 			.replace(/\0.*/g,'')
 			.trim()
 		const stdout = await getLatestPost(user)
-		// i don't know a better way of throwing everything away
 
-		await conn.write(welcome)
+		//await conn.write(welcome)
 		if (stdout) {
 			await copy(stdout, conn)
 		} else {
 			await conn.write(heart)
 		}
-		await conn.write(goodbye)
+		//await conn.write(goodbye)
 	} finally {
 		conn.close()
 	}

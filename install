@@ -3,4 +3,5 @@ deno compile --allow-net --allow-run fingerd.ts
 sudo mv fingerd /bin/partyfingerd
 sudo cp partyfingerd.service /etc/systemd/system/
 sudo systemctl enable --now partyfingerd
+sudo cp grab-latest-post-as-text /bin/
 echo ready for fingering

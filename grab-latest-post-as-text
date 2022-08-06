@@ -1,0 +1,7 @@
+#!/bin/sh
+curl 2>/dev/null https://chee.party/ \
+	 | html2 2>/dev/null \
+	 | awk '/@class=entry-content/{flag=1;next}/!= .entry-content/{flag=0}flag' \
+	 | 2html 2>/dev/null \
+	 | pandoc --from html --to markdown \
+	 | awk '/::: {itemprop="description articleBody"}/{flag=1;next}/:::/{flag=0}flag'

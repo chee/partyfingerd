@@ -2,15 +2,16 @@
 import { copy } from "https://deno.land/std@0.151.0/streams/conversion.ts"
 const listener = Deno.listen({ port: 79 })
 const encoder = new TextEncoder()
+const decoder = new TextDecoder()
 const heart = Uint8Array.from([0x3c, 0x33])
 const dashes = "\n" + "*".repeat(72) + "\n\n"
 const welcome = encoder.encode(dashes)
 const goodbye = encoder.encode(dashes + "see more at https://chee.party/")
 
-async function getLatestPost(): Promise<Deno.Reader | null> {
+async function getLatestPost(post: string): Promise<Deno.Reader | null> {
 	// TODO implement this command in deno
 	const process = Deno.run({
-		cmd: ["/bin/grab-latest-post-as-text"],
+		cmd: ["/bin/grab-post-as-text", post],
 		stdout: "piped"
 	})
 	await process.status()
@@ -21,9 +22,14 @@ let close = (conn: Deno.Conn) => conn.close()
 
 for await (const conn of listener) {
 	try {
-		const stdout = await getLatestPost()
+		const buffer = new Uint8Array(256)
+		await conn.read(buffer)
+		const user = decoder.decode(buffer)
+			.replace(/\0.*/g,'')
+			.trim()
+		const stdout = await getLatestPost(user)
 		// i don't know a better way of throwing everything away
-		await conn.read(new Uint8Array(32))
+
 		await conn.write(welcome)
 		if (stdout) {
 			await copy(stdout, conn)

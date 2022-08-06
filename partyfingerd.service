@@ -1,0 +1,13 @@
+[Unit]
+Description=Finger Party Daemon
+After=network.target
+
+[Service]
+Type=simple
+# lol
+User=root
+ExecStart=/bin/partyfingerd
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -4,9 +4,7 @@ const listener = Deno.listen({ port: 79 })
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const heart = Uint8Array.from([0x3c, 0x33])
-const dashes = "\n" + "*".repeat(72) + "\n\n"
-const welcome = encoder.encode(dashes)
-const goodbye = encoder.encode(dashes + "see more at https://chee.party/")
+const denial = encoder.encode("Finger forwarding service denied")
 
 async function getLatestPost(post: string): Promise<Deno.Reader | null> {
 	// TODO implement this command in deno
@@ -18,8 +16,6 @@ async function getLatestPost(post: string): Promise<Deno.Reader | null> {
 	return process.stdout
 }
 
-let close = (conn: Deno.Conn) => conn.close()
-
 for await (const conn of listener) {
 	try {
 		const buffer = new Uint8Array(256)
@@ -27,15 +23,19 @@ for await (const conn of listener) {
 		const user = decoder.decode(buffer)
 			.replace(/\0.*/g,'')
 			.trim()
-		const stdout = await getLatestPost(user)
-
-		//await conn.write(welcome)
-		if (stdout) {
-			await copy(stdout, conn)
+		if (user.includes("@")) {
+			// spec compliance
+			// https://www.rfc-editor.org/rfc/rfc1288.html#section-3.2.1
+			await conn.write(denial)
 		} else {
-			await conn.write(heart)
+			const stdout = await getLatestPost(user)
+
+			if (stdout) {
+				await copy(stdout, conn)
+			} else {
+				await conn.write(heart)
+			}
 		}
-		//await conn.write(goodbye)
 	} finally {
 		conn.close()
 	}
